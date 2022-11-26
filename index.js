@@ -46,11 +46,30 @@ app.get('/clothe/:id',async(req,res)=>{
 
 // create booking colletion
 app.post('/booking',async(req,res)=>{
-    const booking = req.body;
-    console.log(booking)
+    const booking = req.body;   
     const result= await bookingCollection.insertOne(booking);
     res.send(result)
 })
+
+
+// create user collection 
+app.post('/allusers',async(req,res)=>{
+    const user = req.body;    
+    const result= await allUserCollection.insertOne(user);
+    res.send(result)
+})
+// insert new product in clotheColletion
+app.post('/clothe',async(req,res)=>{
+    const product = req.body;    
+    const result= await clothesCollection.insertOne(product);
+    res.send(result)
+});
+
+
+
+
+
+
 
 
 
