@@ -1,7 +1,7 @@
 const express = require('express')
 const cors = require('cors')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const { query } = require('express');
+// const { query } = require('express');
 const port =process.env.PORT || 5000;
 const app= express()
 require('dotenv').config()
@@ -18,7 +18,8 @@ async function run(){
 try{
 const categoreCollection = client.db("usedClotheStore").collection("categores")
 const clothesCollection = client.db("usedClotheStore").collection("clothes")
-
+const bookingCollection = client.db("usedClotheStore").collection("bookings")
+const allUserCollection = client.db("usedClotheStore").collection("allUsers")
 app.get('/categore',async(req,res)=>{
     const query = {}
     const result = await categoreCollection.find(query).toArray();
@@ -42,6 +43,15 @@ app.get('/clothe/:id',async(req,res)=>{
     res.send(clothe)
     // console.log(selecterClothe)
 })
+
+// create booking colletion
+app.post('/booking',async(req,res)=>{
+    const booking = req.body;
+    console.log(booking)
+    const result= await bookingCollection.insertOne(booking);
+    res.send(result)
+})
+
 
 
 }
