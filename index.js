@@ -82,6 +82,7 @@ app.get('/seller',async(req,res)=>{
     const seller = await allUserCollection.find(query).toArray()
     res.send(seller)
 })
+
 // get all buyer
 app.get('/users',async(req,res)=>{
     const role = req.query.userRole;
@@ -89,7 +90,6 @@ app.get('/users',async(req,res)=>{
      const users = await allUserCollection.find(query).toArray()
      res.send(users)
  })
-
 /*=======================
 all add newProduct api
 ========================
