@@ -20,6 +20,7 @@ const categoreCollection = client.db("usedClotheStore").collection("categores")
 const clothesCollection = client.db("usedClotheStore").collection("clothes")
 const bookingCollection = client.db("usedClotheStore").collection("bookings")
 const allUserCollection = client.db("usedClotheStore").collection("allUsers")
+const reportedItemsCollection = client.db("usedClotheStore").collection("reportedItems")
 app.get('/categore',async(req,res)=>{
     const query = {}
     const result = await categoreCollection.find(query).toArray();
@@ -117,7 +118,7 @@ app.post('/clothe',async(req,res)=>{
     const product = req.body; 
     console.log(product)   
     const result= await clothesCollection.insertOne(product);
-    console.log(result)
+    
     res.send(result)
 });
 
@@ -130,7 +131,17 @@ app.get('/sellerclothe',async(req,res)=>{
     res.send(result)
 });
 
+/*=======================
+all reportedItems api
+========================
+*/
 
+// create reportedItems colletion
+app.post('/reportedItems',async(req,res)=>{
+    const reportInfo = req.body;   
+    const result= await reportedItemsCollection.insertOne(reportInfo);
+    res.send(result)
+})
 
 
 
