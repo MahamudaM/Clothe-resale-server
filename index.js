@@ -74,13 +74,21 @@ app.post('/allusers',async(req,res)=>{
     res.send(result)
 })
 
-// get user by userRole
+
+//get all seller 
 app.get('/seller',async(req,res)=>{
-    const userRole = req.query.userRole;
-    const query = {userRole:userRole}
+   const role = req.query.userRole;
+    const query = {userRole: role}
     const seller = await allUserCollection.find(query).toArray()
     res.send(seller)
 })
+// get all buyer
+app.get('/users',async(req,res)=>{
+    const role = req.query.userRole;
+     const query = {userRole: role}
+     const users = await allUserCollection.find(query).toArray()
+     res.send(users)
+ })
 
 /*=======================
 all add newProduct api
@@ -88,7 +96,8 @@ all add newProduct api
 */
 // insert new product in clotheColletion
 app.post('/clothe',async(req,res)=>{
-    const product = req.body;    
+    const product = req.body; 
+    console.log(product)   
     const result= await clothesCollection.insertOne(product);
     console.log(result)
     res.send(result)
@@ -97,7 +106,7 @@ app.post('/clothe',async(req,res)=>{
 // get clothe by user email
 app.get('/sellerclothe',async(req,res)=>{
     const email = req.query.email;
-    const query = {sellereEmail:email}   
+    const query = {sellerEmail:email}   
     const result= await clothesCollection.find(query).toArray();
     
     res.send(result)
