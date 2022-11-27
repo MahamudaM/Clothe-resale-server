@@ -90,6 +90,24 @@ app.get('/users',async(req,res)=>{
      const users = await allUserCollection.find(query).toArray()
      res.send(users)
  })
+
+// delete a specific seller
+app.delete('/seller/:id',async(req,res)=>{
+    const id = req.params.id;
+    const filter = {_id:ObjectId(id)}
+    const result = await allUserCollection.deleteOne(filter);
+    res.send(result)
+})
+
+// delete specific buyer
+app.delete('/users/:id',async(req,res)=>{
+    const id = req.params.id;
+    const filter = {_id:ObjectId(id)}
+    const result = await allUserCollection.deleteOne(filter);
+    res.send(result)
+})
+
+
 /*=======================
 all add newProduct api
 ========================
