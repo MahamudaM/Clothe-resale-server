@@ -44,6 +44,10 @@ app.get('/clothe/:id',async(req,res)=>{
     // console.log(selecterClothe)
 })
 
+/*=============
+all Booking api
+================
+*/
 // create booking colletion
 app.post('/booking',async(req,res)=>{
     const booking = req.body;   
@@ -51,20 +55,53 @@ app.post('/booking',async(req,res)=>{
     res.send(result)
 })
 
+// get specific bookin by email
+app.get('/booking',async(req,res)=>{
+    const bookemail= req.query.email;
+    const query = {email:bookemail}
+    const booking = await bookingCollection.find(query).toArray();
+    res.send(booking)
+})
 
+/*=============
+all user api
+================
+*/
 // create user collection 
 app.post('/allusers',async(req,res)=>{
     const user = req.body;    
     const result= await allUserCollection.insertOne(user);
     res.send(result)
 })
+
+// get user by userRole
+app.get('/seller',async(req,res)=>{
+    const userRole = req.query.userRole;
+    const query = {userRole:userRole}
+    const seller = await allUserCollection.find(query).toArray()
+    res.send(seller)
+})
+
+/*=======================
+all add newProduct api
+========================
+*/
 // insert new product in clotheColletion
 app.post('/clothe',async(req,res)=>{
     const product = req.body;    
     const result= await clothesCollection.insertOne(product);
+    console.log(result)
     res.send(result)
 });
 
+// get clothe by user email
+app.get('/sellerclothe',async(req,res)=>{
+    const email = req.query.email;
+    const query = {sellereEmail:email}   
+    const result= await clothesCollection.find(query).toArray();
+    
+    res.send(result)
+});
 
 
 
