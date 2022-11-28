@@ -143,8 +143,19 @@ app.post('/reportedItems',async(req,res)=>{
     res.send(result)
 })
 
-
-
+// get all reportedItems
+app.get('/reportedItems',async(req,res)=>{   
+    const query = {}
+    const reportedItems = await reportedItemsCollection.find(query).toArray();
+    res.send(reportedItems)
+})
+// delete reported itme
+app.delete('/reportedItems/:id',async(req,res)=>{
+    const id = req.params.id;
+    const filter = {_id:ObjectId(id)}
+    const result = await reportedItemsCollection.deleteOne(filter);
+    res.send(result)
+})
 
 
 
