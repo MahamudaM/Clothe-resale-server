@@ -147,6 +147,13 @@ app.get('/sellerclothe',async(req,res)=>{
     res.send(result)
 });
 
+app.delete('/sellerclothe/:id',async(req,res)=>{
+    const id = req.params.id;
+    const filter = {_id:ObjectId(id)}
+    const result = await clothesCollection.deleteOne(filter);
+    res.send(result)
+})
+
 /*=======================
 all reportedItems api
 ========================
@@ -172,7 +179,9 @@ app.delete('/reportedItems/:id',async(req,res)=>{
     const result = await reportedItemsCollection.deleteOne(filter);
     res.send(result)
 })
-
+/*======================
+all specific user route api
+=============================*/
 // check admin 
 app.get('/alluser/admin/:email',async(req,res)=>{
     const email= req.params.email;
@@ -180,6 +189,25 @@ app.get('/alluser/admin/:email',async(req,res)=>{
     const user = await allUserCollection.findOne(query)
     res.send({admin:user?.userRole==="admin"})
   })
+
+// seller route api
+app.get('/alluser/seller/:email',async(req,res)=>{
+    const email= req.params.email;
+    const query = {email}
+    const user = await allUserCollection.findOne(query)
+    res.send({seller:user?.userRole==="seller"})
+  })
+
+// buyer route api
+app.get('/alluser/user/:email',async(req,res)=>{
+    const email= req.params.email;
+    const query = {email}
+    const user = await allUserCollection.findOne(query)
+    res.send({userCheck:user?.userRole==="user"})
+  })
+
+
+
 
 }
 finally{
