@@ -84,6 +84,22 @@ app.get('/seller',async(req,res)=>{
     res.send(seller)
 })
 
+// get specific seller by email for seller verification
+app.get('/seller/:email',async(req,res)=>{
+    const email = req.params.email;
+   const query={sellerEmail:email}
+    const result = await clothesCollection.findOne(query);
+    res.send(result)
+})
+
+// delete a specific seller
+app.delete('/seller/:id',async(req,res)=>{
+    const id = req.params.id;
+    const filter = {_id:ObjectId(id)}
+    const result = await allUserCollection.deleteOne(filter);
+    res.send(result)
+})
+
 // get all buyer
 app.get('/users',async(req,res)=>{
     const role = req.query.userRole;
@@ -157,7 +173,13 @@ app.delete('/reportedItems/:id',async(req,res)=>{
     res.send(result)
 })
 
-
+// check admin 
+app.get('/alluser/admin/:email',async(req,res)=>{
+    const email= req.params.email;
+    const query = {email}
+    const user = await allUserCollection.findOne(query)
+    res.send({admin:user?.userRole==="admin"})
+  })
 
 }
 finally{
