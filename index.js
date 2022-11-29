@@ -21,6 +21,7 @@ const clothesCollection = client.db("usedClotheStore").collection("clothes")
 const bookingCollection = client.db("usedClotheStore").collection("bookings")
 const allUserCollection = client.db("usedClotheStore").collection("allUsers")
 const reportedItemsCollection = client.db("usedClotheStore").collection("reportedItems")
+const advertisCollection = client.db("usedClotheStore").collection("advertised")
 app.get('/categore',async(req,res)=>{
     const query = {}
     const result = await categoreCollection.find(query).toArray();
@@ -160,23 +161,36 @@ all reportedItems api
 */
 
 // create reportedItems colletion
-app.post('/reportedItems',async(req,res)=>{
-    const reportInfo = req.body;   
-    const result= await reportedItemsCollection.insertOne(reportInfo);
+app.put('/clothe/reportedClothe/:id',async(req,res)=>{
+    const id = req.params.id;
+    console.log(id)
+    const filter = {_id:ObjectId(id)}   
+    const options = {upsert:true}
+    const updatedDoc = {
+        $set:{
+            report :'true'
+        }
+    }
+    const result= await clothesCollection.updateOne(filter,updatedDoc,options);
     res.send(result)
 })
 
+
 // get all reportedItems
-app.get('/reportedItems',async(req,res)=>{   
-    const query = {}
-    const reportedItems = await reportedItemsCollection.find(query).toArray();
-    res.send(reportedItems)
+app.get('/clothe/reported',async(req,res)=>{
+    // const report = req.params.report;  
+    // console.log(report) 
+    const query = {report:"true"}
+    console.log(query)
+    // const reportedItems = await clothesCollection.find(query).toArray();
+    // res.send(reportedItems)
+    // res.send({reportProd:reportedItems?.report==='true'})
 })
 // delete reported itme
-app.delete('/reportedItems/:id',async(req,res)=>{
+app.delete('/clothe/reportedClothe/:id',async(req,res)=>{
     const id = req.params.id;
     const filter = {_id:ObjectId(id)}
-    const result = await reportedItemsCollection.deleteOne(filter);
+    const result = await clothesCollection.deleteOne(filter);
     res.send(result)
 })
 /*======================
@@ -207,14 +221,25 @@ app.get('/alluser/user/:email',async(req,res)=>{
   })
 
 
+// create advertised product route
+app.post('/advertised',async(req,res)=>{
+    const product= req.body;   
+    const result= await advertisCollection.insertOne(product);
+    res.send(result)
+})
 
+app.get('/advertised',async(req,res)=>{
+    const query = {}
+    const result = await advertisCollection.find(query).toArray();
+    res.send(result)
+});
 
 }
 finally{
 
 }
 }
-run().catch(console.log)
+run().catch((error)=>{console.log(error)})
 
 app.get('/',async(req,res)=>{
     res.send('second hand clothe store running')
