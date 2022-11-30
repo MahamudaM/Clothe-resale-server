@@ -93,7 +93,10 @@ app.post("/create-payment-intent", async (req, res) => {
   app.post('/paidProduct',async(req,res)=>{
     const paidProd = req.body;   
     const result= await paidProductCollection.insertOne(paidProd);
-    const id = paidProd.bookingId;
+    const id = paidProd.dressMainId;
+    console.log(paidProd)
+    console.log(result)
+   
     const filter = {_id:ObjectId(id)}
     const updatedDoc = {
         $set:{
@@ -101,8 +104,18 @@ app.post("/create-payment-intent", async (req, res) => {
             transId:paidProd.transId
         }
     }
-    const udateBookColle = await bookingCollection.updateOne(filter,updatedDoc)
-   
+    const udateclothColle = await clothesCollection.updateOne(filter,updatedDoc)
+    // booking update
+    const id2 = paidProd.bookingId
+    const filter2 = {_id:ObjectId(id2)}
+    const updatedDoc2 = {
+        $set:{
+            paid:true,
+            transId:paidProd.transId
+        }
+    }
+    const udateBookColle = await bookingCollection.updateOne(filter2,updatedDoc2)
+  
     res.send(result)
 })
 
@@ -142,20 +155,30 @@ app.put('/seller/:email',async(req,res)=>{
         }
     }
     const result= await allUserCollection.updateOne(filter,updatedDoc,options);
+// update seller tik
+const filter2 = {sellerEmail:email}   
+const options2 = {upsert:true}
+const updatedDoc2 = {
+    $set:{
+        ver :'true'
+    }
+}
+const result2= await clothesCollection.updateOne(filter2,updatedDoc2,options2);
+
     res.send(result)
 })
 
    
-// get verify seller
-app.get('/seller/:email',async(req,res)=>{
-    const email = req.params.email; 
-    const query = {sellerEmail:email}
+// // get verify seller
+// app.get('/seller/:email',async(req,res)=>{
+//     const email = req.params.email; 
+//     const query = {sellerEmail:email}
       
-    const verifySeller = await clothesCollection.findOne(query);
-    res.send(verifySeller)
-    // res.send({verify:verifySeller?.ver==='true'})
+//     const verifySeller = await clothesCollection.findOne(query);
+//     res.send(verifySeller)
+//     // res.send({verify:verifySeller?.ver==='true'})
     
-})
+// })
 
 
 
