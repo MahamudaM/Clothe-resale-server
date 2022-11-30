@@ -5,13 +5,13 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port =process.env.PORT || 5000;
 const app= express()
 require('dotenv').config()
-
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 app.use(cors())
 app.use(express.json())
 
 
 
-const uri = `mongodb+srv://${process.env.mongoUser}:${process.env.mongoPassword}@cluster0.4jfewjr.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@cluster0.4jfewjr.mongodb.net/?retryWrites=true&w=majority`;
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 async function run(){
@@ -20,8 +20,8 @@ const categoreCollection = client.db("usedClotheStore").collection("categores")
 const clothesCollection = client.db("usedClotheStore").collection("clothes")
 const bookingCollection = client.db("usedClotheStore").collection("bookings")
 const allUserCollection = client.db("usedClotheStore").collection("allUsers")
-const reportedItemsCollection = client.db("usedClotheStore").collection("reportedItems")
-const advertisCollection = client.db("usedClotheStore").collection("advertised")
+const paidProductCollection = client.db("usedClotheStore").collection("paidProduct")
+
 app.get('/categore',async(req,res)=>{
     const query = {}
     const result = await categoreCollection.find(query).toArray();
@@ -64,6 +64,48 @@ app.get('/booking',async(req,res)=>{
     const booking = await bookingCollection.find(query).toArray();
     res.send(booking)
 })
+// get booking by id
+app.get('/booking/:id',async(req,res)=>{
+    const id= req.params.id;
+    const query = {_id:ObjectId(id)}
+    const book = await bookingCollection.findOne(query);
+    res.send(book)
+})
+// stripe payment api
+app.post("/create-payment-intent", async (req, res) => {
+    const bookInfo = req.body;
+  const price = bookInfo.price;
+  const amount = price*100
+    // Create a PaymentIntent with the order amount and currency
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amount,
+      currency: "usd",
+      "payment_method_types": [
+        "card"
+      ]
+    });
+  
+    res.send({
+      clientSecret: paymentIntent.client_secret,
+    });
+  });
+
+  app.post('/paidProduct',async(req,res)=>{
+    const paidProd = req.body;   
+    const result= await paidProductCollection.insertOne(paidProd);
+    const id = paidProd.bookingId;
+    const filter = {_id:ObjectId(id)}
+    const updatedDoc = {
+        $set:{
+            paid:true,
+            transId:paidProd.transId
+        }
+    }
+    const udateBookColle = await bookingCollection.updateOne(filter,updatedDoc)
+   
+    res.send(result)
+})
+
 
 /*=============
 all user api
@@ -85,13 +127,41 @@ app.get('/seller',async(req,res)=>{
     res.send(seller)
 })
 
-// get specific seller by email for seller verification
-app.get('/seller/:email',async(req,res)=>{
+
+ /*==========================
+   seller verification
+ ==============================*/
+app.put('/seller/:email',async(req,res)=>{
     const email = req.params.email;
-   const query={sellerEmail:email}
-    const result = await clothesCollection.findOne(query);
+    console.log(email)
+    const filter = {email:email}   
+    const options = {upsert:true}
+    const updatedDoc = {
+        $set:{
+            ver :'true'
+        }
+    }
+    const result= await allUserCollection.updateOne(filter,updatedDoc,options);
     res.send(result)
 })
+
+   
+// get verify seller
+app.get('/seller/:email',async(req,res)=>{
+    const email = req.params.email; 
+    const query = {sellerEmail:email}
+      
+    const verifySeller = await clothesCollection.findOne(query);
+    res.send(verifySeller)
+    // res.send({verify:verifySeller?.ver==='true'})
+    
+})
+
+
+
+
+
+
 
 // delete a specific seller
 app.delete('/seller/:id',async(req,res)=>{
@@ -177,15 +247,18 @@ app.put('/clothe/reportedClothe/:id',async(req,res)=>{
 
 
 // get all reportedItems
-app.get('/clothe/reported',async(req,res)=>{
-    // const report = req.params.report;  
+app.get('/reported',async(req,res)=>{
+    // const repot = req.query.report;  
     // console.log(report) 
-    const query = {report:"true"}
+    // const query = {report:repot}
+    // const query = {report:"true"}
+    const query ={"report":"true"}
     console.log(query)
-    // const reportedItems = await clothesCollection.find(query).toArray();
-    // res.send(reportedItems)
+    const reportedItems = await clothesCollection.find(query).toArray();
+    res.send(reportedItems)
     // res.send({reportProd:reportedItems?.report==='true'})
 })
+// http://localhost:5000/reported
 // delete reported itme
 app.delete('/clothe/reportedClothe/:id',async(req,res)=>{
     const id = req.params.id;
@@ -204,7 +277,7 @@ app.get('/alluser/admin/:email',async(req,res)=>{
     res.send({admin:user?.userRole==="admin"})
   })
 
-// seller route api
+// check seller route api
 app.get('/alluser/seller/:email',async(req,res)=>{
     const email= req.params.email;
     const query = {email}
@@ -212,7 +285,7 @@ app.get('/alluser/seller/:email',async(req,res)=>{
     res.send({seller:user?.userRole==="seller"})
   })
 
-// buyer route api
+//check  buyer route api
 app.get('/alluser/user/:email',async(req,res)=>{
     const email= req.params.email;
     const query = {email}
@@ -221,18 +294,39 @@ app.get('/alluser/user/:email',async(req,res)=>{
   })
 
 
+
+/*==========================
+all advertised api
+============================ */
+
 // create advertised product route
-app.post('/advertised',async(req,res)=>{
-    const product= req.body;   
-    const result= await advertisCollection.insertOne(product);
+app.put('/advertised/:id',async(req,res)=>{
+    const id = req.params.id;
+    console.log(id)
+    const filter = {_id:ObjectId(id)}   
+    const options = {upsert:true}
+    const updatedDoc = {
+        $set:{
+            adProd :'adv'
+        }
+    }
+    const result= await clothesCollection.updateOne(filter,updatedDoc,options);
     res.send(result)
 })
 
+    /*==============
+    get advProd
+    ================*/
+
 app.get('/advertised',async(req,res)=>{
-    const query = {}
-    const result = await advertisCollection.find(query).toArray();
-    res.send(result)
-});
+    const prod = req.query.adv; 
+    const query = {adProd:prod}
+      
+    const adProds = await clothesCollection.find(query).toArray();
+    res.send(adProds)
+    // res.send({advProd:adProds?.adProd==='adv'})
+    
+})
 
 }
 finally{
