@@ -168,17 +168,7 @@ const result2= await clothesCollection.updateOne(filter2,updatedDoc2,options2);
     res.send(result)
 })
 
-   
-// // get verify seller
-// app.get('/seller/:email',async(req,res)=>{
-//     const email = req.params.email; 
-//     const query = {sellerEmail:email}
-      
-//     const verifySeller = await clothesCollection.findOne(query);
-//     res.send(verifySeller)
-//     // res.send({verify:verifySeller?.ver==='true'})
-    
-// })
+
 
 
 
